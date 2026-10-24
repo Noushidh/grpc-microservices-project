@@ -1,0 +1,37 @@
+﻿services:
+  user-service:
+    image: grpc-user-service
+    build: ./userService
+    ports:
+      - "50051:50051"
+    env_file:
+      - ./userService/.env
+    depends_on:
+      - order-service
+
+  order-service:
+    image: grpc-order-service
+    build: ./orderService
+    ports:
+      - "50052:50052"
+    env_file:
+      - ./orderService/.env
+    environment:
+      DATABASE_URL: "postgresql://postgres:12345@postgres:5432/sample_grpc_orders_db?schema=public"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:17
+    container_name: grpc-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "12345"
+      POSTGRES_DB: sample_grpc_orders_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
