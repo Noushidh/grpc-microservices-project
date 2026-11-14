@@ -7,13 +7,21 @@ datasource db {
   provider = "postgresql"
 }
 
+enum OrderStatus {
+  pending
+  processing
+  shipped
+  delivered
+}
+
 model Order {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  product   String
+  id        Int         @id @default(autoincrement())
+  userId    String      @map("user_id")
+  item      String
   quantity  Int
-  total     Float
-  createdAt DateTime @default(now()) @map("created_at")
+  price     Float
+  status    OrderStatus @default(pending)
+  createdAt DateTime    @default(now()) @map("created_at")
 
   @@map("orders")
 }

@@ -1,34 +1,17 @@
-import grpc from "@grpc/grpc-js";
-import protoLoader from "@grpc/proto-loader";
-import orderService from "./service.js";
+import express from "express";
+import cors from "cors";
 
-const PROTO_PATH = "./order.proto";
+import orderRoutes from "./src/routes/orderRoutes.js";
 
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true,
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.use("/orders", orderRoutes);
+
+const PORT = 5002;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Order Service REST API running on port ${PORT}`);
 });
-
-const orderProto = grpc.loadPackageDefinition(packageDefinition).orderService;
-
-const server = new grpc.Server();
-
-server.addService(orderProto.OrderService.service, orderService);
-
-const PORT = "0.0.0.0:50052";
-
-server.bindAsync(
-  PORT,
-  grpc.ServerCredentials.createInsecure(),
-  (error, port) => {
-    if (error) {
-      console.error("Failed to start OrderService:", error);
-      return;
-    }
-
-    console.log(`OrderService gRPC server running on port ${port}`);
-  },
-);
