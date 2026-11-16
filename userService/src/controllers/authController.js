@@ -64,15 +64,12 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({
         message: "Email and password are required",
       });
     }
 
-    // Find user by email
-    // Password has select: false in User schema
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
@@ -81,7 +78,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Compare password
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -90,7 +86,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Generate JWT
     const token = jwt.sign(
       {
         userId: user._id.toString(),
