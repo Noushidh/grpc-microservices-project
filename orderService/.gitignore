@@ -7,6 +7,7 @@
 
 # Generated Prisma Client
 orderService/generated/prisma/
+generated/
 
 # Logs
 *.log
