@@ -1,19 +1,41 @@
-name: Build and Push Microservices
+name: Build and Deploy Microservices
 
 on:
   push:
     branches:
       - main
+
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+
+  # JOB 1: BUILD AND PUSH DOCKER IMAGES
+
   build-and-push:
+
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: true
+      matrix:
+        service:
+          - name: gateway
+            context: ./api-gateway
+            image: noushidh/grpc-api-gateway
+
+          - name: user-service
+            context: ./userService
+            image: noushidh/grpc-user-service
+
+          - name: order-service
+            context: ./orderService
+            image: noushidh/grpc-order-service
+
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -26,16 +48,55 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push UserService
+      - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: ./userService
+          context: ${{ matrix.service.context }}
           push: true
-          tags: noushidh/grpc-user-service:latest
+          tags: |
+            ${{ matrix.service.image }}:latest
+            ${{ matrix.service.image }}:${{ github.sha }}
 
-      - name: Build and push OrderService
-        uses: docker/build-push-action@v6
-        with:
-          context: ./orderService
-          push: true
-          tags: noushidh/grpc-order-service:latest
+  # JOB 2: DEPLOY TO KUBERNETs
+
+  deploy:
+
+    needs: build-and-push
+
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Kubernetes connection
+        run: kubectl cluster-info
+
+      - name: Apply Kubernetes manifests
+        run: kubectl apply -f k8s/
+
+      - name: Update Gateway deployment
+        run: kubectl set image deployment/gateway-deployment api-gateway=noushidh/grpc-api-gateway:${{ github.sha }}
+
+      - name: Update User deployment
+        run: kubectl set image deployment/user-deployment user-service=noushidh/grpc-user-service:${{ github.sha }}
+
+      - name: Update Order deployment
+        run: kubectl set image deployment/order-deployment order-service=noushidh/grpc-order-service:${{ github.sha }}
+
+      - name: Verify deployments
+        run: |
+          kubectl rollout status deployment/gateway-deployment --timeout=180s
+          kubectl rollout status deployment/user-deployment --timeout=180s
+          kubectl rollout status deployment/order-deployment --timeout=180s
+
+      # ROLLBACK IF DEPLOYMENT FAILS
+
+
+      - name: Rollback deployments
+        if: failure()
+        run: |
+          kubectl rollout undo deployment/gateway-deployment
+          kubectl rollout undo deployment/user-deployment
+          kubectl rollout undo deployment/order-deployment
