@@ -1,35 +1,47 @@
-﻿services:
+﻿name: nexus_grpc_backend
+services:
+  api-gateway:
+    image: noushidh/grpc-api-gateway:latest
+    build: ./api-gateway
+    ports:
+      - "7000:7000"
+    env_file:
+      - ./api-gateway/.env
+    depends_on:
+      - user-service
+      - order-service
+
   user-service:
-    image: grpc-user-service
+    image: noushidh/grpc-user-service:latest
     build: ./userService
     ports:
+      - "5001:5001"
       - "50051:50051"
     env_file:
       - ./userService/.env
-    depends_on:
-      - order-service
 
   order-service:
-    image: grpc-order-service
+    image: noushidh/grpc-order-service:latest
     build: ./orderService
     ports:
-      - "50052:50052"
+      - "5002:5002"
     env_file:
       - ./orderService/.env
     environment:
       DATABASE_URL: "postgresql://postgres:12345@postgres:5432/sample_grpc_orders_db?schema=public"
+      USER_SERVICE_URL: "user-service:50051"
     depends_on:
+      - user-service
       - postgres
 
   postgres:
     image: postgres:17
-    container_name: grpc-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "12345"
       POSTGRES_DB: sample_grpc_orders_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
 

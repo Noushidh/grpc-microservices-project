@@ -1,3 +1,14 @@
 node_modules
 .env
+.env.*
 .git
+.gitignore
+Dockerfile
+.dockerignore
+npm-debug.log*
+coverage
+dist
+build
+.vscode
+.idea
+k8s/secret.yaml

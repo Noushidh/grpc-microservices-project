@@ -17,3 +17,6 @@
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Kubernetes secrets
+k8s/secret.yaml

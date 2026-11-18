@@ -9,5 +9,6 @@ RUN npm ci
 COPY . .
 
 EXPOSE 50051
+EXPOSE 50051
 
-CMD ["node", "server.js"]
+CMD ["npm", "start"]

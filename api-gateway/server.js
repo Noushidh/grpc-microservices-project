@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 
 import { authMiddleware } from "./src/middleware/authMiddleware.js";
 import errorMiddleware from "./src/middleware/errorMiddleware.js";
-import { userProxy, orderProxy } from "./src/routes/proxyRoutes.js";
+import { authProxy, userProxy, orderProxy } from "./src/routes/proxyRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -28,7 +28,7 @@ app.use(limiter);
 
 app.use("/api", authMiddleware);
 
-app.use("/api/auth", userProxy);
+app.use("/api/auth", authProxy);
 app.use("/api/users", userProxy);
 app.use("/api/orders", orderProxy);
 

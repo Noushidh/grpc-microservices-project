@@ -15,8 +15,10 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 
 const userProto = grpc.loadPackageDefinition(packageDefinition).userService;
 
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || "user-service:50051";
+
 const userClient = new userProto.UserService(
-  "localhost:50051",
+  USER_SERVICE_URL,
   grpc.credentials.createInsecure(),
 );
 

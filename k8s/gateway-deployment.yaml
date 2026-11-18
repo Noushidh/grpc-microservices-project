@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: gateway-deployment
+
+spec:
+  replicas: 2
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+  selector:
+    matchLabels:
+      app: api-gateway
+
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+
+    spec:
+      containers:
+        - name: api-gateway
+          image: noushidh/grpc-api-gateway:latest
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 7000
+
+          env:
+            - name: PORT
+              value: "7000"
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nexus-secrets
+                  key: JWT_SECRET

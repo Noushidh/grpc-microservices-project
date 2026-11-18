@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: user-deployment
+
+spec:
+  replicas: 2
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+  selector:
+    matchLabels:
+      app: user-service
+
+  template:
+    metadata:
+      labels:
+        app: user-service
+
+    spec:
+      containers:
+        - name: user-service
+          image: noushidh/grpc-user-service:latest
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: rest
+              containerPort: 5001
+            - name: grpc
+              containerPort: 50051
+
+          env:
+            - name: PORT
+              value: "5001"
+
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: nexus-secrets
+                  key: DB_NAME
+
+            - name: JWT_EXPIRES_IN
+              value: "24h"
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nexus-secrets
+                  key: JWT_SECRET
+
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: nexus-secrets
+                  key: MONGODB_URI

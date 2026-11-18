@@ -12,4 +12,4 @@ RUN npx prisma generate
 
 EXPOSE 50052
 
-CMD ["node", "server.js"]
+CMD ["npm", "start"]

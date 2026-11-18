@@ -1,0 +1,17 @@
+# Environment files
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Kubernetes secrets
+k8s/secret.yaml
+
+# Docker archives
+*.tar
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log

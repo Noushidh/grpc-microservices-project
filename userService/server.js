@@ -25,24 +25,6 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 
-app.get("/api/users", async (req, res) => {
-  try {
-    const db = await connectDB();
-    const users = await db
-      .collection("users")
-      .find({}, { projection: { userId: 1, name: 1, email: 1 } })
-      .toArray();
-    res.status(200).json({ success: true, users });
-  } catch (error) {
-    console.error("Error fetching users:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch users",
-    });
-  }
-});
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -63,8 +45,10 @@ const startServer = async () => {
   try {
     await connectMongooseDB();
 
-    app.listen(5001, "0.0.0.0", () => {
-      console.log("REST API running on port 5001");
+    const REST_PORT = process.env.PORT || 5001;
+
+    app.listen(REST_PORT, "0.0.0.0", () => {
+      console.log(`User REST API running on port ${REST_PORT}`);
     });
 
     server.bindAsync(
